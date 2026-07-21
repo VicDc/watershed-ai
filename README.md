@@ -3,7 +3,16 @@
 Terrain-analysis pipeline that turns a DEM into the best flood-injection point, ranked by simulated flooded area.
 
 [Leggi in italiano](README.it.md)
+![Watershed-AI](docs/assets/watershed-ai-cover.png)
 
+# Watershed-AI
+
+Pipeline che analizza un modello digitale del terreno (DEM) per
+individuare i punti ottimali da cui immettere acqua di mare e simulare
+la sua espansione — nato per esplorare, a livello computazionale, lo
+stesso problema che l'organizzazione [Real Ice](https://www.realice.eco/)
+affronta sul campo nell'Artico: dove pompare acqua di mare sul ghiaccio
+per farlo ispessire più velocemente e contrastarne lo scioglimento estivo.
 > Exploratory personal project, external to any academic program.
 > Author: Vicio Di Cara
 

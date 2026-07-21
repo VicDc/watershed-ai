@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  watershed-app:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:8.6-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5

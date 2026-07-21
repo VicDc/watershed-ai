@@ -1,0 +1,39 @@
+# Env / secrets
+.env
+
+# Dati pesanti (mai versionare raw/dem/cache)
+data/raw/*
+!data/raw/.gitkeep
+data/dem/*
+!data/dem/.gitkeep
+data/public_dem_cache/*
+!data/public_dem_cache/.gitkeep
+
+# Output generati
+output/maps/*
+!output/maps/.gitkeep
+output/animations/*
+!output/animations/.gitkeep
+output/reports/*
+!output/reports/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+.antigravity/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug / file anomali (non referenziati da test o doc)
+diagnose_screenshot.png
+tests/rasters_COP30.tar
+tests/rasters_COP90.tar

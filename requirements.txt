@@ -1,0 +1,38 @@
+numpy>=1.26.0
+requests>=2.31.0
+scipy>=1.13.0
+laspy>=2.5.0                  # lettura point cloud LiDAR .las/.laz
+rasterio>=1.3.0               # I/O GeoTIFF, georeferenziazione
+opencv-python>=4.10.0         # estrazione curve di livello da mappe scansionate
+Pillow>=10.0.0
+pytesseract>=0.3.10           # OCR per quote sulle curve di livello
+scikit-image>=0.24.0          # skeletonization, morphological ops
+plotly>=5.0.0
+matplotlib>=3.7.0
+kaleido>=0.2.1                 # export statico Plotly
+pandas>=2.0.0
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+fastapi>=0.115.0               # opzionale, se serve API/UI
+uvicorn[standard]>=0.30.0
+redis[asyncio]>=5.0.0          # opzionale, cache DEM
+plotly 
+kaleido
+# dev/test
+pytest>=8.0.0
+
+# --- Idrologia raster: NON hanno wheel precompilate per Windows/Python 3.13 ---
+# richdem, pysheds e whitebox tentano di compilare da sorgente su Windows e
+# falliscono senza Visual Studio Build Tools. Installarli separatamente via
+# conda-forge quando si arriva a implementare priority_flood.py /
+# candidate_detection.py (vedi README, sezione "Dipendenze geospaziali su
+# Windows"):
+#
+#   conda create -n watershed python=3.12
+#   conda activate watershed
+#   conda install -c conda-forge richdem pysheds whitebox gdal
+#   pip install -r requirements.txt
+#
+# richdem>=0.3.4
+# pysheds>=0.3.5
+# whitebox>=2.3.0

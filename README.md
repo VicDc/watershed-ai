@@ -45,7 +45,7 @@ Comparison of flooded area over time across candidates:
 
 ![Simulation comparison chart](docs/assets/02_confronto_simulazioni.png)
 
-Final ranking map with all evaluated candidates and the winner (gold star = largest flooded area):
+Final ranking map with all evaluated candidates and the winner (gold star = largest flooded area, cyan lines = D8 flow paths from each candidate):
 
 ![Candidate ranking map](docs/assets/03_mappa_finale_ranking.png)
 
@@ -57,9 +57,9 @@ Same simulation, 3D terrain view:
 
 ![3D flood animation on the DEM](docs/assets/05_flood_animation_3d.gif)
 
-Same simulation, 3D terrain view over satellite imagery:
+Same simulation, top-down 2D view over satellite imagery:
 
-![3D flood animation on satellite terrain](docs/assets/06_flood_animation_satellite.gif)
+![2D flood animation over satellite imagery](docs/assets/06_flood_animation_satellite.gif)
 
 DEM elevation overlaid on satellite imagery (interactive HTML, static capture):
 
@@ -76,6 +76,14 @@ Interactive 3D flood view for the winning candidate (interactive HTML, static ca
 Interactive 3D satellite terrain view (interactive HTML, static capture):
 
 ![Interactive 3D satellite terrain](docs/assets/10_terrain_satellite_3d.png)
+
+D8 flow accumulation (cells draining into each cell, log scale):
+
+![D8 flow accumulation heatmap](docs/assets/11_flow_accumulation.png)
+
+D8 flow paths on the 3D terrain (static matplotlib figure):
+
+![D8 flow paths on 3D terrain](docs/assets/12_flow_paths_3d.png)
 
 ## Quickstart
 
@@ -126,7 +134,7 @@ All of these live in `scripts/` and run directly against `app/hydrology/` + `app
 | Quick check: which candidate points were found and why | `python -m scripts.test_fase2` / `python -m scripts.diagnose_candidates` | console only |
 | Shareable 2D flood animation (top-down) | `python -m scripts.export_flood_animation` | GIF + MP4 |
 | Shareable 3D flood animation on the DEM (slow, ~2-3 min, via kaleido) | `python -m scripts.export_flood_animation_3d` | GIF + MP4 |
-| Shareable 3D flood animation over satellite imagery (needs internet) | `python -m scripts.export_flood_animation_satellite` | GIF + MP4 |
+| Shareable 2D flood animation (top-down) over satellite imagery (needs internet) | `python -m scripts.export_flood_animation_satellite` | GIF + MP4 |
 | Static DEM + candidate-points map | `python -m scripts.visualize_dem` | static PNG |
 | Interactive DEM/satellite overlay, transparency slider (needs internet) | `python -m scripts.visualize_dem_satellite` | HTML |
 | Interactive 3D flood view for the winning candidate (with D8 flow paths), no satellite | `python -m scripts.visualize_flood_3d` | HTML |

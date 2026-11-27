@@ -157,8 +157,11 @@ def main() -> None:
             yaxis_title="riga",
             zaxis_title="quota (m)",
             aspectratio=dict(x=1, y=n_rows / n_cols, z=0.5),
+            # camera di default Plotly (1.25, 1.25, 1.25) ruotata di -180°: l'acqua in primo piano
+            camera=dict(eye=dict(x=-1.25, y=-1.25, z=1.25)),
         ),
         margin=dict(t=60, b=10),
+        legend=dict(x=0.01, y=0.99),  # in alto a sinistra, lontano dalle colorbar a destra
     )
 
     div_id = "flood3dplot"

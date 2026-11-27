@@ -36,7 +36,7 @@ Confronto dell'area allagata nel tempo tra i candidati:
 
 ![Grafico di confronto simulazioni](docs/assets/02_confronto_simulazioni.png)
 
-Mappa finale con i candidati valutati e il vincitore (stella dorata = maggiore area allagata):
+Mappa finale con i candidati valutati e il vincitore (stella dorata = maggiore area allagata, linee ciano = percorsi di deflusso D8 da ogni candidato):
 
 ![Mappa di ranking dei candidati](docs/assets/03_mappa_finale_ranking.png)
 
@@ -48,9 +48,9 @@ Stessa simulazione in vista 3D sul terreno:
 
 ![Animazione 3D dell'allagamento sul DEM](docs/assets/05_flood_animation_3d.gif)
 
-Stessa simulazione in vista 3D su immagine satellitare:
+Stessa simulazione in vista 2D dall'alto su immagine satellitare:
 
-![Animazione 3D su terreno satellitare](docs/assets/06_flood_animation_satellite.gif)
+![Animazione 2D su immagine satellitare](docs/assets/06_flood_animation_satellite.gif)
 
 Elevazione del DEM sovrapposta a immagine satellitare (HTML interattivo, cattura statica):
 
@@ -67,6 +67,14 @@ Vista 3D interattiva dell'allagamento per il candidato vincitore (HTML interatti
 Vista 3D interattiva del terreno satellitare (HTML interattivo, cattura statica):
 
 ![Vista 3D interattiva del terreno satellitare](docs/assets/10_terrain_satellite_3d.png)
+
+Accumulo di flusso D8 (celle che drenano in ogni cella, scala logaritmica):
+
+![Heatmap accumulo di flusso D8](docs/assets/11_flow_accumulation.png)
+
+Percorsi di deflusso D8 sul terreno 3D (figura matplotlib statica):
+
+![Percorsi di deflusso D8 sul terreno 3D](docs/assets/12_flow_paths_3d.png)
 
 ## Quickstart
 
@@ -117,7 +125,7 @@ Vivono tutti in `scripts/` e lavorano direttamente su `app/hydrology/` + `app/in
 | Verifica rapida: quali punti candidati sono stati trovati e perché | `python -m scripts.test_fase2` / `python -m scripts.diagnose_candidates` | solo console |
 | Animazione 2D condivisibile (vista dall'alto) | `python -m scripts.export_flood_animation` | GIF + MP4 |
 | Animazione 3D condivisibile sul DEM (lenta, ~2-3 min, via kaleido) | `python -m scripts.export_flood_animation_3d` | GIF + MP4 |
-| Animazione 3D condivisibile su immagine satellitare (richiede internet) | `python -m scripts.export_flood_animation_satellite` | GIF + MP4 |
+| Animazione 2D condivisibile (vista dall'alto) su immagine satellitare (richiede internet) | `python -m scripts.export_flood_animation_satellite` | GIF + MP4 |
 | Mappa statica DEM + punti candidati | `python -m scripts.visualize_dem` | PNG statico |
 | Overlay interattivo DEM/satellite, slider trasparenza (richiede internet) | `python -m scripts.visualize_dem_satellite` | HTML |
 | Vista 3D interattiva dell'allagamento per il candidato vincitore (con percorsi di deflusso D8), no satellite | `python -m scripts.visualize_flood_3d` | HTML |

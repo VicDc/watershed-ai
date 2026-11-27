@@ -147,6 +147,7 @@ def render_flow_paths_3d(dem: DEMGrid, output_path: str, start_spacing_cells: in
     ax.add_collection3d(Line3DCollection(segments, colors="blue", linewidths=1.2, alpha=0.8),
                         autolim=False)
     ax.invert_yaxis()  # riga 0 in fondo, come nelle mappe 2D (origin upper)
+    ax.view_init(elev=30, azim=120)  # default matplotlib -60° ruotato di -180°: l'acqua a valle resta in vista
     ax.set_title(f"Percorsi di deflusso D8 ({len(segments)} partenze)")
     ax.set_xlabel("colonna")
     ax.set_ylabel("riga")

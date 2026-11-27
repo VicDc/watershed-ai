@@ -120,7 +120,8 @@ Vivono tutti in `scripts/` e lavorano direttamente su `app/hydrology/` + `app/in
 | Animazione 3D condivisibile su immagine satellitare (richiede internet) | `python -m scripts.export_flood_animation_satellite` | GIF + MP4 |
 | Mappa statica DEM + punti candidati | `python -m scripts.visualize_dem` | PNG statico |
 | Overlay interattivo DEM/satellite, slider trasparenza (richiede internet) | `python -m scripts.visualize_dem_satellite` | HTML |
-| Vista 3D interattiva dell'allagamento per il candidato vincitore, no satellite | `python -m scripts.visualize_flood_3d` | HTML |
+| Vista 3D interattiva dell'allagamento per il candidato vincitore (con percorsi di deflusso D8), no satellite | `python -m scripts.visualize_flood_3d` | HTML |
+| Heatmap accumulo di flusso D8 + terreno 3D statico con percorsi di deflusso (matplotlib, senza kaleido) | `python -m scripts.visualize_flow_routing` | 2 PNG statici |
 | Time-lapse interattivo dell'allagamento su immagine satellitare reale (richiede internet) | `python -m scripts.visualize_flood_timelapse` | HTML |
 | Terreno 3D + satellite interattivo, senza animazione acqua (richiede internet + PyVista) | `python -m scripts.visualize_terrain_satellite_3d` | HTML |
 | App 3D interattiva completa, server live (richiede internet + PyVista/trame) | `python -m scripts.app_terrain_satellite_3d_interactive` | server su `http://localhost:8080` |
@@ -130,14 +131,13 @@ Vivono tutti in `scripts/` e lavorano direttamente su `app/hydrology/` + `app/in
 
 Stato onesto basato su un audit completo del codice con esecuzione reale (`docs/AUDIT-STATO-REALE.md`, 2026-07-21) — non aspirazionale.
 
-**Funziona oggi, verificato eseguendolo:** candidate detection, riempimento depressioni (priority-flood), simulazione allagamento a cellular automata, ranking, rendering mappa statica, e tutti i 15 script in `scripts/` (13 producono output verificato su disco, 2 sono server interattivi che partono correttamente). È la pipeline descritta sopra e mostrata negli screenshot.
+**Funziona oggi, verificato eseguendolo:** candidate detection, riempimento depressioni (priority-flood), flow routing D8 (direzione, accumulo, percorsi di deflusso; D-infinity/MFD non implementati), simulazione allagamento a cellular automata, ranking, rendering mappa statica, e tutti i 16 script in `scripts/` (14 producono output verificato su disco, 2 sono server interattivi che partono correttamente). È la pipeline descritta sopra e mostrata negli screenshot.
 
 **Non funziona — stub (`raise NotImplementedError`), mai completato:**
 - `app/ingestion/lidar_processing.py` — ingestion point cloud LiDAR (`extract_dem_from_lidar`) **non implementata**. Nessun dato `.las`/`.laz` di test presente nel repo.
 - `app/ingestion/contour_extraction.py` — ingestion da mappa topografica scansionata (OCR + vettorizzazione curve di livello) — non implementata.
 - `app/ingestion/drone_photogrammetry.py` — ingestion da fotogrammetria drone — non implementata, esplicitamente marcata come placeholder per una fase futura.
 - `app/ingestion/public_dem.py: download_public_dem()` — download automatico del DEM — non implementato; funziona solo il caricamento di un GeoTIFF locale già presente (`load_dem_from_geotiff()`), che è quello effettivamente usato da ogni script.
-- `app/hydrology/flow_routing.py` — flow direction/accumulation — non implementato; è anche codice morto, nessuno lo importa.
 - `app/agents/visualization_agent.py` — non implementato.
 - `app/viz/animation_builder.py`, `app/viz/comparison_charts.py` — non implementati come moduli, ma la stessa funzionalità (animazioni, grafico di confronto) funziona ed è testata — è duplicata direttamente dentro `scripts/`, bypassando completamente questi moduli.
 - `app/services/dem_cache.py` — cache DEM su Redis — non implementata, mai istanziata da nessuna parte.
@@ -160,7 +160,7 @@ Stato onesto basato su un audit completo del codice con esecuzione reale (`docs/
 app/
 ├── agents/       # orchestrator + una classe per fase (per lo più inutilizzato, vedi stato sopra)
 ├── ingestion/    # sorgenti dati → DEM (funziona solo il ramo file locale di public_dem.py)
-├── hydrology/    # flow routing (inutilizzato), candidate detection, priority-flood, cellular automata
+├── hydrology/    # flow routing D8, candidate detection, priority-flood, cellular automata
 ├── viz/          # mappe, animazioni, grafici comparativi (animazioni/grafici sono stub, vedi stato sopra)
 ├── services/     # cache DEM (Redis), report builder — entrambi non implementati
 └── core/         # tipi di dominio, config, eccezioni

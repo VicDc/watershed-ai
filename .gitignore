@@ -37,3 +37,6 @@ Thumbs.db
 diagnose_screenshot.png
 tests/rasters_COP30.tar
 tests/rasters_COP90.tar
+
+# Confronto locale con 3d-mountain-simulation-predicting-flood-paths
+comparison/

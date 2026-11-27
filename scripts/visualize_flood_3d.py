@@ -22,6 +22,7 @@ from app.agents.ranking_agent import RankingAgent
 from app.core.naming import timestamped_filename
 from app.hydrology.candidate_detection import detect_candidates
 from app.hydrology.cellular_automata import simulate_flood_with_snapshots
+from app.hydrology.flow_routing import compute_flow_direction, trace_flow_path
 from app.hydrology.priority_flood import fill_depressions
 from app.ingestion.public_dem import load_dem_from_geotiff
 
@@ -130,7 +131,24 @@ def main() -> None:
         opacity=0.9,
     )
 
-    fig = go.Figure(data=[terrain_surface, water_surface, candidate_markers])
+    # Percorsi D8 dai candidati, una sola traccia con gap None tra un percorso e l'altro
+    direction = compute_flow_direction(dem_filled)
+    path_x, path_y, path_z = [], [], []
+    for c in candidates:
+        for r, col in trace_flow_path(direction, c.row, c.col):
+            path_x.append(col)
+            path_y.append(r)
+            path_z.append(float(elevation[r, col]))
+        path_x.append(None)
+        path_y.append(None)
+        path_z.append(None)
+    flow_paths = go.Scatter3d(
+        x=path_x, y=path_y, z=path_z, mode="lines",
+        line=dict(color="cyan", width=4), hoverinfo="skip", name="Deflusso D8",
+    )
+
+    # L'ordine conta: lo script JS aggiorna l'acqua per indice (waterTraceIndex = 1)
+    fig = go.Figure(data=[terrain_surface, water_surface, candidate_markers, flow_paths])
     fig.update_layout(
         title=f"Vista 3D — candidato vincitore {winner_id}",
         template="plotly_dark",

@@ -39,8 +39,8 @@ OUT_PATH = Path("site/index.html")  # versionato: Cloudflare Pages pubblica ques
 SATELLITE_SCALE = 3          # texture e griglia del terreno: 3x la risoluzione del DEM
 N_SNAPSHOTS = 10
 TERRAIN_Z_EXAGGERATION = 2.0  # come visualize_terrain_satellite_3d.py
-DEFAULT_AZIMUTH_DEG = -90     # camera a sud che guarda verso nord
-DEFAULT_ELEVATION_DEG = 35
+DEFAULT_AZIMUTH_DEG = 45      # camera a nord-est: vista scelta per leggere il pendio
+DEFAULT_ELEVATION_DEG = 16
 CAMERA_RADIUS = 1.5
 
 
@@ -117,8 +117,9 @@ def main() -> None:
     z_label = float(elevation.max()) + 60
     compass = go.Scatter3d(
         x=[width_m / 2, width_m / 2, width_m, 0], y=[height_m, 0, height_m / 2, height_m / 2],
-        z=[z_label] * 4, mode="text", text=["N", "S", "E", "O"],
-        textfont=dict(size=20, color="white"), hoverinfo="skip", name="Punti cardinali",
+        z=[z_label] * 4, mode="text", text=["<b>N</b>", "S", "E", "O"],
+        textfont=dict(size=[26, 20, 20, 20], color=["red", "white", "white", "white"]),
+        hoverinfo="skip", name="Punti cardinali",
     )
 
     z_ratio = (float(elevation.max() - elevation.min()) * TERRAIN_Z_EXAGGERATION) / width_m
@@ -159,6 +160,7 @@ def main() -> None:
     <div class="readout">Azimut camera: <b id="az">-</b> &middot; vista da <span id="from">-</span> &middot; elevazione <span id="el">-</span></div>
     <label>Rotazione <input type="range" id="azSlider" min="0" max="359" step="1"></label>
     <button id="copy">Copia link a questa vista</button>
+    <button id="shot">Scarica screenshot PNG</button>
   </div>
   <div class="bar">
     <label>Tempo <input type="range" id="timeSlider" min="0" max="{len(frames) - 1}" value="{len(frames) - 1}" step="1"></label>
@@ -175,12 +177,16 @@ def main() -> None:
   const deg = r => r * 180 / Math.PI, rad = d => d * Math.PI / 180;
   const norm = d => ((Math.round(d) % 360) + 360) % 360;
   const names = ['est', 'nord-est', 'nord', 'nord-ovest', 'ovest', 'sud-ovest', 'sud', 'sud-est'];
+  const frameHours = {json.dumps([round(t / 3600, 2) for t, _ in frames])};
   let radius = {CAMERA_RADIUS};
+  const view = {{ az: 0, el: 0, frame: frameHours.length - 1 }};  // stato corrente, per il nome dello screenshot
 
   function show(eye) {{
     const az = norm(deg(Math.atan2(eye.y, eye.x)));
     const el = Math.round(deg(Math.atan2(eye.z, Math.hypot(eye.x, eye.y))));
     radius = Math.hypot(eye.x, eye.y, eye.z);
+    view.az = az;
+    view.el = el;
     document.getElementById('az').textContent = az + '°';
     document.getElementById('from').textContent = names[Math.round(az / 45) % 8];
     document.getElementById('el').textContent = el + '°';
@@ -212,9 +218,17 @@ def main() -> None:
     setTimeout(() => e.target.textContent = 'Copia link a questa vista', 1500);
   }});
   document.getElementById('timeSlider').addEventListener('input', e => {{
-    const f = waterFrames[Number(e.target.value)];
+    view.frame = Number(e.target.value);
+    const f = waterFrames[view.frame];
     Plotly.restyle(plot, {{ z: [f.z], surfacecolor: [f.c] }}, [1]);
-    document.getElementById('timeLabel').textContent = frameLabels[Number(e.target.value)];
+    document.getElementById('timeLabel').textContent = frameLabels[view.frame];
+  }});
+  // Nome file: watershed-ai_<vincitore>_az45_el16_t4.52h_20261127-2210.png
+  document.getElementById('shot').addEventListener('click', () => {{
+    const d = new Date(), p = n => String(n).padStart(2, '0');
+    const stamp = `${{d.getFullYear()}}${{p(d.getMonth() + 1)}}${{p(d.getDate())}}-${{p(d.getHours())}}${{p(d.getMinutes())}}`;
+    const name = `watershed-ai_{winner_id}_az${{view.az}}_el${{view.el}}_t${{frameHours[view.frame]}}h_${{stamp}}`;
+    Plotly.downloadImage(plot, {{ format: 'png', filename: name, width: plot.clientWidth, height: plot.clientHeight, scale: 2 }});
   }});
 </script>
 </body>

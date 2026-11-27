@@ -28,11 +28,18 @@ from app.core.types import DEMGrid
 _NEIGHBORS_8 = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
 
 
-def fill_depressions(dem: DEMGrid) -> DEMGrid:
+def fill_depressions(dem: DEMGrid, epsilon: bool = False) -> DEMGrid:
     """Ritorna una nuova DEMGrid con i sink spuri riempiti.
 
     Rimuove "sink_artifacts_detected" da dem.quality_flags una volta
     applicato con successo.
+
+    epsilon=True (Priority-Flood+Epsilon, Barnes 2014): ogni cella raggiunta
+    non più alta della cella da cui arriva viene alzata al float successivo
+    (np.nextafter, ~1e-13 m) invece che alla stessa quota. Laghi riempiti e
+    piane diventano leggermente inclinati verso l'uscita: ogni cella interna
+    ha un vicino strettamente più basso. Serve al flow routing D8; la
+    simulazione usa il riempimento normale.
     """
     elevation = dem.elevation.astype(np.float64).copy()
     n_rows, n_cols = elevation.shape
@@ -65,7 +72,10 @@ def fill_depressions(dem: DEMGrid) -> DEMGrid:
                 continue
 
             visited[nr, nc] = True
-            if filled[nr, nc] < elev:
+            if epsilon and filled[nr, nc] <= elev:
+                filled[nr, nc] = np.nextafter(elev, np.inf)
+                n_cells_raised += 1
+            elif filled[nr, nc] < elev:
                 filled[nr, nc] = elev
                 n_cells_raised += 1
 

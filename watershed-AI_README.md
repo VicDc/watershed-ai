@@ -129,7 +129,8 @@ All of these live in `scripts/` and run directly against `app/hydrology/` + `app
 | Shareable 3D flood animation over satellite imagery (needs internet) | `python -m scripts.export_flood_animation_satellite` | GIF + MP4 |
 | Static DEM + candidate-points map | `python -m scripts.visualize_dem` | static PNG |
 | Interactive DEM/satellite overlay, transparency slider (needs internet) | `python -m scripts.visualize_dem_satellite` | HTML |
-| Interactive 3D flood view for the winning candidate, no satellite | `python -m scripts.visualize_flood_3d` | HTML |
+| Interactive 3D flood view for the winning candidate (with D8 flow paths), no satellite | `python -m scripts.visualize_flood_3d` | HTML |
+| D8 flow-accumulation heatmap + static 3D terrain with flow paths (matplotlib, no kaleido) | `python -m scripts.visualize_flow_routing` | 2 static PNG |
 | Interactive time-lapse of the flood over real satellite imagery (needs internet) | `python -m scripts.visualize_flood_timelapse` | HTML |
 | Interactive 3D terrain + satellite, no flood animation (needs internet + PyVista) | `python -m scripts.visualize_terrain_satellite_3d` | HTML |
 | Full interactive 3D app, live server (needs internet + PyVista/trame) | `python -m scripts.app_terrain_satellite_3d_interactive` | server at `http://localhost:8080` |
@@ -139,14 +140,13 @@ All of these live in `scripts/` and run directly against `app/hydrology/` + `app
 
 Honest status based on a full code audit with real execution (`docs/AUDIT-STATO-REALE.md`, 2026-07-21) — not aspirational.
 
-**Works today, verified by running it:** candidate detection, depression filling (priority-flood), cellular-automata flood simulation, ranking, static map rendering, and all 15 scripts in `scripts/` (13 produce verified output on disk, 2 are interactive servers that start correctly). This is the pipeline described above and shown in the screenshots.
+**Works today, verified by running it:** candidate detection, depression filling (priority-flood), D8 flow routing (direction, accumulation, flow paths; D-infinity/MFD not implemented), cellular-automata flood simulation, ranking, static map rendering, and all 16 scripts in `scripts/` (14 produce verified output on disk, 2 are interactive servers that start correctly). This is the pipeline described above and shown in the screenshots.
 
 **Does not work — stub (`raise NotImplementedError`), never completed:**
 - `app/ingestion/lidar_processing.py` — LiDAR point-cloud ingestion (`extract_dem_from_lidar`) is **not implemented**. No `.las`/`.laz` test data exists in the repo either.
 - `app/ingestion/contour_extraction.py` — scanned topographic map ingestion (OCR + contour vectorization) — not implemented.
 - `app/ingestion/drone_photogrammetry.py` — drone photogrammetry ingestion — not implemented, explicitly marked as a placeholder for a later phase.
 - `app/ingestion/public_dem.py: download_public_dem()` — automatic DEM download — not implemented; only loading an existing local GeoTIFF (`load_dem_from_geotiff()`) works, and it's the one every script actually uses.
-- `app/hydrology/flow_routing.py` — flow direction/accumulation — not implemented; also dead code, nothing imports it.
 - `app/agents/visualization_agent.py` — not implemented.
 - `app/viz/animation_builder.py`, `app/viz/comparison_charts.py` — not implemented as modules, but the same functionality (animations, comparison chart) works and is tested — it's duplicated directly inside `scripts/`, bypassing these modules entirely.
 - `app/services/dem_cache.py` — Redis DEM cache — not implemented, never instantiated anywhere.
@@ -169,7 +169,7 @@ Honest status based on a full code audit with real execution (`docs/AUDIT-STATO-
 app/
 ├── agents/       # orchestrator + one class per pipeline stage (mostly unused, see status above)
 ├── ingestion/    # data sources → DEM (only public_dem.py's local-file path actually works)
-├── hydrology/    # flow routing (unused), candidate detection, priority-flood, cellular automata
+├── hydrology/    # D8 flow routing, candidate detection, priority-flood, cellular automata
 ├── viz/          # maps, animations, comparison charts (animations/charts are stubs, see status above)
 ├── services/     # DEM cache (Redis), report builder — both unimplemented
 └── core/         # domain types, config, exceptions

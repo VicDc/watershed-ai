@@ -36,7 +36,7 @@ Confronto dell'area allagata nel tempo tra i candidati:
 
 ![Grafico di confronto simulazioni](docs/assets/02_confronto_simulazioni.png)
 
-Mappa finale con i candidati valutati e il vincitore (stella dorata = maggiore area allagata):
+Mappa finale con i candidati valutati e il vincitore (stella dorata = maggiore area allagata, linee ciano = percorsi di deflusso D8 da ogni candidato):
 
 ![Mappa di ranking dei candidati](docs/assets/03_mappa_finale_ranking.png)
 
@@ -48,9 +48,9 @@ Stessa simulazione in vista 3D sul terreno:
 
 ![Animazione 3D dell'allagamento sul DEM](docs/assets/05_flood_animation_3d.gif)
 
-Stessa simulazione in vista 3D su immagine satellitare:
+Stessa simulazione in vista 2D dall'alto su immagine satellitare:
 
-![Animazione 3D su terreno satellitare](docs/assets/06_flood_animation_satellite.gif)
+![Animazione 2D su immagine satellitare](docs/assets/06_flood_animation_satellite.gif)
 
 Elevazione del DEM sovrapposta a immagine satellitare (HTML interattivo, cattura statica):
 
@@ -67,6 +67,17 @@ Vista 3D interattiva dell'allagamento per il candidato vincitore (HTML interatti
 Vista 3D interattiva del terreno satellitare (HTML interattivo, cattura statica):
 
 ![Vista 3D interattiva del terreno satellitare](docs/assets/10_terrain_satellite_3d.png)
+
+Accumulo di flusso (celle che drenano in ogni cella, scala logaritmica): D8 a sinistra, D-infinity a destra. D-infinity divide l'acqua tra due vicini, quindi mostra anche la dispersione sui versanti:
+
+<p>
+  <img src="docs/assets/11_flow_accumulation.png" alt="Heatmap accumulo di flusso D8" width="49%">
+  <img src="docs/assets/13_flow_accumulation_dinf.png" alt="Heatmap accumulo di flusso D-infinity" width="49%">
+</p>
+
+Percorsi di deflusso D8 sul terreno 3D (figura matplotlib statica):
+
+![Percorsi di deflusso D8 sul terreno 3D](docs/assets/12_flow_paths_3d.png)
 
 ## Quickstart
 
@@ -117,11 +128,11 @@ Vivono tutti in `scripts/` e lavorano direttamente su `app/hydrology/` + `app/in
 | Verifica rapida: quali punti candidati sono stati trovati e perché | `python -m scripts.test_fase2` / `python -m scripts.diagnose_candidates` | solo console |
 | Animazione 2D condivisibile (vista dall'alto) | `python -m scripts.export_flood_animation` | GIF + MP4 |
 | Animazione 3D condivisibile sul DEM (lenta, ~2-3 min, via kaleido) | `python -m scripts.export_flood_animation_3d` | GIF + MP4 |
-| Animazione 3D condivisibile su immagine satellitare (richiede internet) | `python -m scripts.export_flood_animation_satellite` | GIF + MP4 |
+| Animazione 2D condivisibile (vista dall'alto) su immagine satellitare (richiede internet) | `python -m scripts.export_flood_animation_satellite` | GIF + MP4 |
 | Mappa statica DEM + punti candidati | `python -m scripts.visualize_dem` | PNG statico |
 | Overlay interattivo DEM/satellite, slider trasparenza (richiede internet) | `python -m scripts.visualize_dem_satellite` | HTML |
 | Vista 3D interattiva dell'allagamento per il candidato vincitore (con percorsi di deflusso D8), no satellite | `python -m scripts.visualize_flood_3d` | HTML |
-| Heatmap accumulo di flusso D8 + terreno 3D statico con percorsi di deflusso (matplotlib, senza kaleido) | `python -m scripts.visualize_flow_routing` | 2 PNG statici |
+| Heatmap accumulo di flusso D8 e D-infinity + terreno 3D statico con percorsi di deflusso D8 (matplotlib, senza kaleido) | `python -m scripts.visualize_flow_routing` | 3 PNG statici |
 | Time-lapse interattivo dell'allagamento su immagine satellitare reale (richiede internet) | `python -m scripts.visualize_flood_timelapse` | HTML |
 | Terreno 3D + satellite interattivo, senza animazione acqua (richiede internet + PyVista) | `python -m scripts.visualize_terrain_satellite_3d` | HTML |
 | App 3D interattiva completa, server live (richiede internet + PyVista/trame) | `python -m scripts.app_terrain_satellite_3d_interactive` | server su `http://localhost:8080` |
@@ -131,7 +142,7 @@ Vivono tutti in `scripts/` e lavorano direttamente su `app/hydrology/` + `app/in
 
 Stato onesto basato su un audit completo del codice con esecuzione reale (`docs/AUDIT-STATO-REALE.md`, 2026-07-21) — non aspirazionale.
 
-**Funziona oggi, verificato eseguendolo:** candidate detection, riempimento depressioni (priority-flood), flow routing D8 (direzione, accumulo, percorsi di deflusso; D-infinity/MFD non implementati), simulazione allagamento a cellular automata, ranking, rendering mappa statica, e tutti i 16 script in `scripts/` (14 producono output verificato su disco, 2 sono server interattivi che partono correttamente). È la pipeline descritta sopra e mostrata negli screenshot.
+**Funziona oggi, verificato eseguendolo:** candidate detection, riempimento depressioni (priority-flood), flow routing D8 e D-infinity (direzione e accumulo; percorsi di deflusso disegnati con D8; MFD non implementato), simulazione allagamento a cellular automata, ranking, rendering mappa statica, e tutti i 16 script in `scripts/` (14 producono output verificato su disco, 2 sono server interattivi che partono correttamente). È la pipeline descritta sopra e mostrata negli screenshot.
 
 **Non funziona — stub (`raise NotImplementedError`), mai completato:**
 - `app/ingestion/lidar_processing.py` — ingestion point cloud LiDAR (`extract_dem_from_lidar`) **non implementata**. Nessun dato `.las`/`.laz` di test presente nel repo.
@@ -160,7 +171,7 @@ Stato onesto basato su un audit completo del codice con esecuzione reale (`docs/
 app/
 ├── agents/       # orchestrator + una classe per fase (per lo più inutilizzato, vedi stato sopra)
 ├── ingestion/    # sorgenti dati → DEM (funziona solo il ramo file locale di public_dem.py)
-├── hydrology/    # flow routing D8, candidate detection, priority-flood, cellular automata
+├── hydrology/    # flow routing D8 / D-infinity, candidate detection, priority-flood, cellular automata
 ├── viz/          # mappe, animazioni, grafici comparativi (animazioni/grafici sono stub, vedi stato sopra)
 ├── services/     # cache DEM (Redis), report builder — entrambi non implementati
 └── core/         # tipi di dominio, config, eccezioni

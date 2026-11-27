@@ -25,6 +25,7 @@ from app.hydrology.cellular_automata import simulate_flood_with_snapshots
 from app.hydrology.flow_routing import compute_flow_direction, trace_flow_path
 from app.hydrology.priority_flood import fill_depressions
 from app.ingestion.public_dem import load_dem_from_geotiff
+from scripts.export_flood_animation_3d import _camera_for_frame
 
 DEM_PATH = "data/dem/copernicus_glo30_test.tif"
 OUTPUT_DIR = Path("output/maps")
@@ -157,8 +158,11 @@ def main() -> None:
             yaxis_title="riga",
             zaxis_title="quota (m)",
             aspectratio=dict(x=1, y=n_rows / n_cols, z=0.5),
+            # stessa camera della vista 3D animata (05): il pendio si vede di fronte
+            camera=_camera_for_frame(0, 1),
         ),
         margin=dict(t=60, b=10),
+        legend=dict(x=0.01, y=0.99),  # in alto a sinistra, lontano dalle colorbar a destra
     )
 
     div_id = "flood3dplot"

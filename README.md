@@ -45,7 +45,7 @@ Comparison of flooded area over time across candidates:
 
 ![Simulation comparison chart](docs/assets/02_confronto_simulazioni.png)
 
-Final ranking map with all evaluated candidates and the winner (gold star = largest flooded area):
+Final ranking map with all evaluated candidates and the winner (gold star = largest flooded area, cyan lines = D8 flow paths from each candidate):
 
 ![Candidate ranking map](docs/assets/03_mappa_finale_ranking.png)
 
@@ -57,9 +57,9 @@ Same simulation, 3D terrain view:
 
 ![3D flood animation on the DEM](docs/assets/05_flood_animation_3d.gif)
 
-Same simulation, 3D terrain view over satellite imagery:
+Same simulation, top-down 2D view over satellite imagery:
 
-![3D flood animation on satellite terrain](docs/assets/06_flood_animation_satellite.gif)
+![2D flood animation over satellite imagery](docs/assets/06_flood_animation_satellite.gif)
 
 DEM elevation overlaid on satellite imagery (interactive HTML, static capture):
 
@@ -76,6 +76,17 @@ Interactive 3D flood view for the winning candidate (interactive HTML, static ca
 Interactive 3D satellite terrain view (interactive HTML, static capture):
 
 ![Interactive 3D satellite terrain](docs/assets/10_terrain_satellite_3d.png)
+
+Flow accumulation (cells draining into each cell, log scale): D8 on the left, D-infinity on the right. D-infinity splits the water between two neighbours, so it also shows the spread on the hillslopes:
+
+<p>
+  <img src="docs/assets/11_flow_accumulation.png" alt="D8 flow accumulation heatmap" width="49%">
+  <img src="docs/assets/13_flow_accumulation_dinf.png" alt="D-infinity flow accumulation heatmap" width="49%">
+</p>
+
+D8 flow paths on the 3D terrain (static matplotlib figure):
+
+![D8 flow paths on 3D terrain](docs/assets/12_flow_paths_3d.png)
 
 ## Quickstart
 
@@ -126,11 +137,11 @@ All of these live in `scripts/` and run directly against `app/hydrology/` + `app
 | Quick check: which candidate points were found and why | `python -m scripts.test_fase2` / `python -m scripts.diagnose_candidates` | console only |
 | Shareable 2D flood animation (top-down) | `python -m scripts.export_flood_animation` | GIF + MP4 |
 | Shareable 3D flood animation on the DEM (slow, ~2-3 min, via kaleido) | `python -m scripts.export_flood_animation_3d` | GIF + MP4 |
-| Shareable 3D flood animation over satellite imagery (needs internet) | `python -m scripts.export_flood_animation_satellite` | GIF + MP4 |
+| Shareable 2D flood animation (top-down) over satellite imagery (needs internet) | `python -m scripts.export_flood_animation_satellite` | GIF + MP4 |
 | Static DEM + candidate-points map | `python -m scripts.visualize_dem` | static PNG |
 | Interactive DEM/satellite overlay, transparency slider (needs internet) | `python -m scripts.visualize_dem_satellite` | HTML |
 | Interactive 3D flood view for the winning candidate (with D8 flow paths), no satellite | `python -m scripts.visualize_flood_3d` | HTML |
-| D8 flow-accumulation heatmap + static 3D terrain with flow paths (matplotlib, no kaleido) | `python -m scripts.visualize_flow_routing` | 2 static PNG |
+| D8 and D-infinity flow-accumulation heatmaps + static 3D terrain with D8 flow paths (matplotlib, no kaleido) | `python -m scripts.visualize_flow_routing` | 3 static PNG |
 | Interactive time-lapse of the flood over real satellite imagery (needs internet) | `python -m scripts.visualize_flood_timelapse` | HTML |
 | Interactive 3D terrain + satellite, no flood animation (needs internet + PyVista) | `python -m scripts.visualize_terrain_satellite_3d` | HTML |
 | Full interactive 3D app, live server (needs internet + PyVista/trame) | `python -m scripts.app_terrain_satellite_3d_interactive` | server at `http://localhost:8080` |
@@ -140,7 +151,7 @@ All of these live in `scripts/` and run directly against `app/hydrology/` + `app
 
 Honest status based on a full code audit with real execution (`docs/AUDIT-STATO-REALE.md`, 2026-07-21) — not aspirational.
 
-**Works today, verified by running it:** candidate detection, depression filling (priority-flood), D8 flow routing (direction, accumulation, flow paths; D-infinity/MFD not implemented), cellular-automata flood simulation, ranking, static map rendering, and all 16 scripts in `scripts/` (14 produce verified output on disk, 2 are interactive servers that start correctly). This is the pipeline described above and shown in the screenshots.
+**Works today, verified by running it:** candidate detection, depression filling (priority-flood), D8 and D-infinity flow routing (direction and accumulation; flow paths drawn with D8; MFD not implemented), cellular-automata flood simulation, ranking, static map rendering, and all 16 scripts in `scripts/` (14 produce verified output on disk, 2 are interactive servers that start correctly). This is the pipeline described above and shown in the screenshots.
 
 **Does not work — stub (`raise NotImplementedError`), never completed:**
 - `app/ingestion/lidar_processing.py` — LiDAR point-cloud ingestion (`extract_dem_from_lidar`) is **not implemented**. No `.las`/`.laz` test data exists in the repo either.
@@ -169,7 +180,7 @@ Honest status based on a full code audit with real execution (`docs/AUDIT-STATO-
 app/
 ├── agents/       # orchestrator + one class per pipeline stage (mostly unused, see status above)
 ├── ingestion/    # data sources → DEM (only public_dem.py's local-file path actually works)
-├── hydrology/    # D8 flow routing, candidate detection, priority-flood, cellular automata
+├── hydrology/    # D8 / D-infinity flow routing, candidate detection, priority-flood, cellular automata
 ├── viz/          # maps, animations, comparison charts (animations/charts are stubs, see status above)
 ├── services/     # DEM cache (Redis), report builder — both unimplemented
 └── core/         # domain types, config, exceptions

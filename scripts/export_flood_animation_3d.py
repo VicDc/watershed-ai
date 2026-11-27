@@ -46,7 +46,7 @@ _TARGET_VISUAL_FRACTION = 0.12
 # mostrato automaticamente, senza dover indovinare l'angolo "giusto".
 ROTATE_DEGREES_TOTAL = 0      # 360 = giro completo; 0 = camera fissa (comportamento precedente)
 CAMERA_RADIUS = 1.4             # distanza della camera dal centro (più alto = più zoom out)
-CAMERA_START_DEGREES = 230      # angolo di partenza
+CAMERA_START_DEGREES = 50       # angolo di partenza (230 - 180: l'acqua non resta dietro la cresta)
 CAMERA_ELEVATION = 1.1          # quota della camera (più alto = vista più dall'alto)
 
 # --- Colori --------------------------------------------------------------

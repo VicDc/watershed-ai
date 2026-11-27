@@ -29,6 +29,7 @@ from scipy import ndimage
 from app.agents.ranking_agent import RankingAgent
 from app.hydrology.candidate_detection import detect_candidates
 from app.hydrology.cellular_automata import FLOOD_SIM_PARAMS, simulate_flood_with_snapshots
+from app.hydrology.flow_routing import compute_flow_direction, trace_flow_path
 from app.hydrology.priority_flood import fill_depressions
 from app.ingestion.public_dem import load_dem_from_geotiff
 from scripts.export_flood_animation_3d import _compute_depth_exaggeration
@@ -122,8 +123,27 @@ def main() -> None:
         hoverinfo="skip", name="Punti cardinali",
     )
 
+    # Percorsi di deflusso D8 da ogni candidato, come nelle mappe 2D: una sola
+    # traccia, percorsi separati da None. Poco sopra il terreno per non
+    # finire sotto la texture.
+    direction = compute_flow_direction(dem_filled)
+    path_x, path_y, path_z = [], [], []
+    for c in candidates:
+        for r, col in trace_flow_path(direction, c.row, c.col):
+            path_x.append(col * cell)
+            path_y.append((n_rows - 1 - r) * cell)
+            path_z.append(round(float(elevation[r, col]) + 10, 1))
+        path_x.append(None)
+        path_y.append(None)
+        path_z.append(None)
+    flow_paths = go.Scatter3d(
+        x=path_x, y=path_y, z=path_z, mode="lines", line=dict(color="cyan", width=5),
+        hoverinfo="skip", name="Deflusso D8",
+    )
+
     z_ratio = (float(elevation.max() - elevation.min()) * TERRAIN_Z_EXAGGERATION) / width_m
-    fig = go.Figure(data=[terrain, water, markers, compass])  # l'acqua e' la traccia 1 (usata dal JS)
+    # Indici usati dal JS: acqua = 1, percorsi D8 = 4
+    fig = go.Figure(data=[terrain, water, markers, compass, flow_paths])
     fig.update_layout(
         template="plotly_dark", margin=dict(l=0, r=0, t=0, b=0), showlegend=False,
         scene=dict(
@@ -173,6 +193,7 @@ def main() -> None:
   <div class="bar">
     <label>Tempo <input type="range" id="timeSlider" min="0" max="{len(frames) - 1}" value="{len(frames) - 1}" step="1"></label>
     <span id="timeLabel">{frame_labels[-1]}</span>
+    <label><input type="checkbox" id="pathsToggle" checked> Percorsi di deflusso D8</label>
     <span class="note">Acqua esagerata {exaggeration:.1f}x, rilievo esagerato {TERRAIN_Z_EXAGGERATION:.1f}x. Trascina per ruotare, rotella per zoom.</span>
   </div>
   {plot_html}
@@ -231,11 +252,15 @@ def main() -> None:
     Plotly.restyle(plot, {{ z: [f.z], surfacecolor: [f.c] }}, [1]);
     document.getElementById('timeLabel').textContent = frameLabels[view.frame];
   }});
-  // Nome file: watershed-ai_<vincitore>_az45_el16_t4.52h_20261127-2210.png
+  document.getElementById('pathsToggle').addEventListener('change', e => {{
+    Plotly.restyle(plot, {{ visible: [e.target.checked] }}, [4]);
+  }});
+  // Nome file: watershed-ai_<vincitore>_az45_el16_t4.52h[_D8]_20261127-2210.png
   document.getElementById('shot').addEventListener('click', () => {{
     const d = new Date(), p = n => String(n).padStart(2, '0');
     const stamp = `${{d.getFullYear()}}${{p(d.getMonth() + 1)}}${{p(d.getDate())}}-${{p(d.getHours())}}${{p(d.getMinutes())}}`;
-    const name = `watershed-ai_{winner_id}_az${{view.az}}_el${{view.el}}_t${{frameHours[view.frame]}}h_${{stamp}}`;
+    const d8 = document.getElementById('pathsToggle').checked ? '_D8' : '';
+    const name = `watershed-ai_{winner_id}_az${{view.az}}_el${{view.el}}_t${{frameHours[view.frame]}}h${{d8}}_${{stamp}}`;
     Plotly.downloadImage(plot, {{ format: 'png', filename: name, width: plot.clientWidth, height: plot.clientHeight, scale: 2 }});
   }});
 </script>

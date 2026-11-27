@@ -24,6 +24,7 @@ from app.agents.ranking_agent import RankingAgent
 from app.core.naming import timestamped_filename
 from app.hydrology.candidate_detection import detect_candidates
 from app.hydrology.cellular_automata import FLOOD_SIM_PARAMS, simulate_flood_with_snapshots
+from app.hydrology.flow_routing import compute_flow_direction, trace_flow_path
 from app.hydrology.priority_flood import fill_depressions
 from app.ingestion.public_dem import load_dem_from_geotiff
 
@@ -154,7 +155,12 @@ def main() -> None:
 
     # Marker di tutti i candidati (goccia), vincitore evidenziato
     markers_html = []
+    direction = compute_flow_direction(dem_filled)
+    path_polylines = []
     for c in candidates:
+        # percorso di deflusso D8, coordinate = centro cella (colonna, riga)
+        points = " ".join(f"{col + 0.5},{row + 0.5}" for row, col in trace_flow_path(direction, c.row, c.col))
+        path_polylines.append(f'<polyline points="{points}" />')
         is_winner = c.id == winner_id
         css_class = "winner shape-pin" if is_winner else "other"
         left_pct = (c.col + 0.5) / n_cols * 100
@@ -193,6 +199,10 @@ def main() -> None:
   }}
   .container img {{ position: absolute; top: 0; left: 0; width: {width}px; height: {height}px; display: block; }}
   #waterLayer {{ opacity: 0.85; }}
+  /* Percorsi D8 sopra acqua e satellite, sotto i marker */
+  .flow-paths {{ position: absolute; top: 0; left: 0; width: {width}px; height: {height}px; z-index: 5; pointer-events: none; }}
+  .flow-paths polyline {{ fill: none; stroke: cyan; stroke-width: 2; stroke-opacity: 0.9; vector-effect: non-scaling-stroke; }}
+  .legend-line {{ width: 22px; height: 0; border-top: 2px solid cyan; flex-shrink: 0; }}
 
   .marker {{
     position: absolute;
@@ -349,12 +359,14 @@ def main() -> None:
   <div class="container">
     <img id="satelliteLayer" src="{to_data_uri(satellite_bytes)}" alt="satellite">
     <img id="waterLayer" src="{frame_data_uris[0]}" alt="acqua">
+    <svg class="flow-paths" viewBox="0 0 {n_cols} {n_rows}" preserveAspectRatio="none">{''.join(path_polylines)}</svg>
     {''.join(markers_html)}
   </div>
 
   <div class="legend">
     <div class="legend-item"><span class="legend-swatch winner"></span> candidato vincitore</div>
     <div class="legend-item"><span class="legend-swatch other"></span> altri candidati</div>
+    <div class="legend-item"><span class="legend-line"></span> deflusso D8 dai candidati</div>
     <div class="legend-item">profondità acqua: <span class="legend-gradient"></span> bassa &rarr; alta</div>
   </div>
 

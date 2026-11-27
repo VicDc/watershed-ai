@@ -12,7 +12,7 @@ import numpy as np
 from matplotlib.colors import LogNorm
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 
-from app.core.types import CandidatePoint, DEMGrid, FloodTimeSeries
+from app.core.types import CandidatePoint, DEMGrid, FloodTimeSeries, FlowAlgorithm
 from app.hydrology.cellular_automata import FLOOD_SIM_PARAMS, _redistribute_step
 from app.hydrology.flow_routing import compute_flow_accumulation, compute_flow_direction, trace_flow_path
 
@@ -108,17 +108,20 @@ def render_static_map(
     return _save(fig, output_path)
 
 
-def render_flow_accumulation_map(dem: DEMGrid, output_path: str) -> str:
-    """Heatmap dell'accumulo di flusso D8 (celle drenate), scala logaritmica.
+def render_flow_accumulation_map(
+    dem: DEMGrid, output_path: str, algorithm: FlowAlgorithm = FlowAlgorithm.D8,
+) -> str:
+    """Heatmap dell'accumulo di flusso (celle drenate), scala logaritmica.
 
     Stesso orientamento di render_static_map: elevation[row, col], origin upper.
     """
-    accumulation = compute_flow_accumulation(dem)
+    accumulation = compute_flow_accumulation(dem, algorithm)
+    label = "D8" if algorithm == FlowAlgorithm.D8 else "D-infinity"
     fig, ax = plt.subplots(figsize=(11, 8))
     image = ax.imshow(accumulation, cmap="Blues", norm=LogNorm(vmin=1), origin="upper",
                       interpolation="nearest")
     fig.colorbar(image, ax=ax, label="celle drenate (log)")
-    ax.set_title(f"Accumulo di flusso D8 — massimo {accumulation.max()} celle")
+    ax.set_title(f"Accumulo di flusso {label} — massimo {accumulation.max():.0f} celle")
     ax.set_xlabel("colonna")
     ax.set_ylabel("riga")
     return _save(fig, output_path)

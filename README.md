@@ -77,9 +77,12 @@ Interactive 3D satellite terrain view (interactive HTML, static capture):
 
 ![Interactive 3D satellite terrain](docs/assets/10_terrain_satellite_3d.png)
 
-D8 flow accumulation (cells draining into each cell, log scale):
+Flow accumulation (cells draining into each cell, log scale): D8 on the left, D-infinity on the right. D-infinity splits the water between two neighbours, so it also shows the spread on the hillslopes:
 
-![D8 flow accumulation heatmap](docs/assets/11_flow_accumulation.png)
+<p>
+  <img src="docs/assets/11_flow_accumulation.png" alt="D8 flow accumulation heatmap" width="49%">
+  <img src="docs/assets/13_flow_accumulation_dinf.png" alt="D-infinity flow accumulation heatmap" width="49%">
+</p>
 
 D8 flow paths on the 3D terrain (static matplotlib figure):
 
@@ -138,7 +141,7 @@ All of these live in `scripts/` and run directly against `app/hydrology/` + `app
 | Static DEM + candidate-points map | `python -m scripts.visualize_dem` | static PNG |
 | Interactive DEM/satellite overlay, transparency slider (needs internet) | `python -m scripts.visualize_dem_satellite` | HTML |
 | Interactive 3D flood view for the winning candidate (with D8 flow paths), no satellite | `python -m scripts.visualize_flood_3d` | HTML |
-| D8 flow-accumulation heatmap + static 3D terrain with flow paths (matplotlib, no kaleido) | `python -m scripts.visualize_flow_routing` | 2 static PNG |
+| D8 and D-infinity flow-accumulation heatmaps + static 3D terrain with D8 flow paths (matplotlib, no kaleido) | `python -m scripts.visualize_flow_routing` | 3 static PNG |
 | Interactive time-lapse of the flood over real satellite imagery (needs internet) | `python -m scripts.visualize_flood_timelapse` | HTML |
 | Interactive 3D terrain + satellite, no flood animation (needs internet + PyVista) | `python -m scripts.visualize_terrain_satellite_3d` | HTML |
 | Full interactive 3D app, live server (needs internet + PyVista/trame) | `python -m scripts.app_terrain_satellite_3d_interactive` | server at `http://localhost:8080` |

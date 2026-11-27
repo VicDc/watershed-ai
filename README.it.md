@@ -68,9 +68,12 @@ Vista 3D interattiva del terreno satellitare (HTML interattivo, cattura statica)
 
 ![Vista 3D interattiva del terreno satellitare](docs/assets/10_terrain_satellite_3d.png)
 
-Accumulo di flusso D8 (celle che drenano in ogni cella, scala logaritmica):
+Accumulo di flusso (celle che drenano in ogni cella, scala logaritmica): D8 a sinistra, D-infinity a destra. D-infinity divide l'acqua tra due vicini, quindi mostra anche la dispersione sui versanti:
 
-![Heatmap accumulo di flusso D8](docs/assets/11_flow_accumulation.png)
+<p>
+  <img src="docs/assets/11_flow_accumulation.png" alt="Heatmap accumulo di flusso D8" width="49%">
+  <img src="docs/assets/13_flow_accumulation_dinf.png" alt="Heatmap accumulo di flusso D-infinity" width="49%">
+</p>
 
 Percorsi di deflusso D8 sul terreno 3D (figura matplotlib statica):
 
@@ -129,7 +132,7 @@ Vivono tutti in `scripts/` e lavorano direttamente su `app/hydrology/` + `app/in
 | Mappa statica DEM + punti candidati | `python -m scripts.visualize_dem` | PNG statico |
 | Overlay interattivo DEM/satellite, slider trasparenza (richiede internet) | `python -m scripts.visualize_dem_satellite` | HTML |
 | Vista 3D interattiva dell'allagamento per il candidato vincitore (con percorsi di deflusso D8), no satellite | `python -m scripts.visualize_flood_3d` | HTML |
-| Heatmap accumulo di flusso D8 + terreno 3D statico con percorsi di deflusso (matplotlib, senza kaleido) | `python -m scripts.visualize_flow_routing` | 2 PNG statici |
+| Heatmap accumulo di flusso D8 e D-infinity + terreno 3D statico con percorsi di deflusso D8 (matplotlib, senza kaleido) | `python -m scripts.visualize_flow_routing` | 3 PNG statici |
 | Time-lapse interattivo dell'allagamento su immagine satellitare reale (richiede internet) | `python -m scripts.visualize_flood_timelapse` | HTML |
 | Terreno 3D + satellite interattivo, senza animazione acqua (richiede internet + PyVista) | `python -m scripts.visualize_terrain_satellite_3d` | HTML |
 | App 3D interattiva completa, server live (richiede internet + PyVista/trame) | `python -m scripts.app_terrain_satellite_3d_interactive` | server su `http://localhost:8080` |

@@ -45,9 +45,10 @@ _TARGET_VISUAL_FRACTION = 0.12
 # gradi nell'arco dell'intero video — cosi' ogni punto di vista viene
 # mostrato automaticamente, senza dover indovinare l'angolo "giusto".
 ROTATE_DEGREES_TOTAL = 0      # 360 = giro completo; 0 = camera fissa (comportamento precedente)
-CAMERA_RADIUS = 1.4             # distanza della camera dal centro (più alto = più zoom out)
-CAMERA_START_DEGREES = 50       # angolo di partenza (230 - 180: l'acqua non resta dietro la cresta)
-CAMERA_ELEVATION = 1.1          # quota della camera (più alto = vista più dall'alto)
+CAMERA_RADIUS = 1.7             # distanza della camera dal centro (più alto = più zoom out)
+CAMERA_START_DEGREES = 45       # azimut iniziale, antiorario da est su assi nord-in-alto: 45 = da nord-est
+CAMERA_ELEVATION_DEGREES = 16    # elevazione della camera sull'orizzonte
+CAMERA_ELEVATION = CAMERA_RADIUS * np.tan(np.radians(CAMERA_ELEVATION_DEGREES))
 
 # --- Colori --------------------------------------------------------------
 # Terreno: qualunque colorscale Plotly valida. Alternative interessanti:
@@ -117,7 +118,9 @@ def _render_3d_frame_png(
         title=title_text,
         template="plotly_dark",
         scene=dict(
-            xaxis_title="colonna", yaxis_title="riga", zaxis_title="quota (m)",
+            xaxis_title="colonna", zaxis_title="quota (m)",
+            # riga 0 = nord: asse invertito per avere il nord in alto (y = riga specchierebbe la scena)
+            yaxis=dict(title="riga", autorange="reversed"),
             aspectratio=dict(x=1, y=n_rows / n_cols, z=0.5),
             camera=camera,
         ),

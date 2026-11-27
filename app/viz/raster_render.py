@@ -146,10 +146,13 @@ def render_flow_paths_3d(dem: DEMGrid, output_path: str, start_spacing_cells: in
     ax.plot_surface(cols, rows, elevation, cmap="terrain", linewidth=0, alpha=0.8)
     ax.add_collection3d(Line3DCollection(segments, colors="blue", linewidths=1.2, alpha=0.8),
                         autolim=False)
-    ax.invert_yaxis()  # riga 0 in fondo, come nelle mappe 2D (origin upper)
-    ax.view_init(elev=30, azim=120)  # default matplotlib -60° ruotato di -180°: l'acqua a valle resta in vista
+    # Stessa vista della 3D animata (scripts/export_flood_animation_3d.py): camera a 50°
+    # attorno all'asse verticale, elevazione atan(1.1 / 1.4), stesse proporzioni.
+    ax.set_box_aspect((1, elevation.shape[0] / elevation.shape[1], 0.5))
+    ax.view_init(elev=np.degrees(np.arctan2(1.1, 1.4)), azim=50)
     ax.set_title(f"Percorsi di deflusso D8 ({len(segments)} partenze)")
     ax.set_xlabel("colonna")
     ax.set_ylabel("riga")
-    ax.set_zlabel("quota (m)")
+    ax.zaxis.set_rotate_label(False)  # con questa vista matplotlib la capovolgerebbe
+    ax.set_zlabel("quota (m)", rotation=90)
     return _save(fig, output_path)

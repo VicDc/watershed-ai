@@ -7,11 +7,11 @@ quadrato unitario, qui campionate su un raster e scalate in metri.
 import numpy as np
 import pytest
 
-from app.core.types import DEMGrid
+from app.core.types import DEMGrid, FlowAlgorithm
 from app.hydrology.candidate_detection import detect_candidates
 from app.hydrology.cellular_automata import FLOOD_SIM_PARAMS, _redistribute_step, simulate_flood_with_snapshots
 from app.hydrology.flow_routing import (
-    NO_FLOW, compute_flow_accumulation, compute_flow_direction, trace_flow_path,
+    D8_OFFSETS, NO_FLOW, compute_flow_accumulation, compute_flow_direction, trace_flow_path,
 )
 from app.hydrology.priority_flood import fill_depressions
 
@@ -144,7 +144,63 @@ def test_epsilon_fill_changes_elevation_only_infinitesimally():
     np.testing.assert_allclose(eps, plain, atol=1e-6)
 
 
-def test_only_d8_is_implemented():
-    from app.core.types import FlowAlgorithm
+def test_mfd_is_not_implemented():
     with pytest.raises(NotImplementedError):
         compute_flow_direction(make_dem(cone), FlowAlgorithm.MFD)
+
+
+# --- flow routing D-infinity ------------------------------------------------
+
+DINF = FlowAlgorithm.D_INFINITY
+
+
+def oblique_plane(x, y):
+    """Piano che scende verso est-nord-est: direzione (1, 0.5), non multipla di 45°."""
+    return 1.5 - x - 0.5 * y
+
+
+def test_dinf_tilted_plane_flows_west_like_d8():
+    dem = make_dem(plane)
+    angle = compute_flow_direction(dem, DINF)
+    np.testing.assert_allclose(angle[:, 1:], np.pi)
+    np.testing.assert_allclose(compute_flow_accumulation(dem, DINF)[:, 0], N)
+
+
+def test_dinf_recovers_oblique_direction_that_d8_cannot():
+    dem = make_dem(oblique_plane)
+    expected = np.arctan2(0.5, 1.0)  # ~26.6°, tra est (D8: 0°) e nord-est (D8: 45°)
+    angle = compute_flow_direction(dem, DINF)
+    np.testing.assert_allclose(angle[1:, :-1], expected, atol=1e-9)
+
+    d8 = compute_flow_direction(dem)[1:-1, 1:-1]
+    d8_angles = {D8_OFFSETS[k] for k in np.unique(d8)}
+    assert d8_angles <= {(0, 1), (-1, 1)}  # D8 sceglie solo E o NE
+
+
+def test_dinf_cone_flows_radially_outward():
+    dem = make_dem(cone)
+    angle = compute_flow_direction(dem, DINF)
+    rows, cols = np.mgrid[0:N, 0:N]
+    radial = np.arctan2(CENTER - rows, cols - CENTER) % (2 * np.pi)
+    far = np.hypot(rows - CENTER, cols - CENTER) >= 5
+    interior = np.zeros_like(far)
+    interior[1:-1, 1:-1] = True
+    error = np.angle(np.exp(1j * (angle - radial)))  # differenza angolare in [-pi, pi]
+    assert np.abs(error[far & interior]).max() < 0.1
+
+
+def test_dinf_accumulation_conserves_water_and_splits_flow():
+    dem = make_dem(oblique_plane)
+    accumulation = compute_flow_accumulation(dem, DINF)
+    sinks = np.isnan(compute_flow_direction(dem, DINF))
+    assert accumulation[sinks].sum() == pytest.approx(N * N)
+    # con l'acqua divisa tra due vicini compaiono accumuli frazionari
+    assert not np.allclose(accumulation, np.round(accumulation))
+
+
+def test_dinf_crosses_filled_lakes():
+    lake = fill_depressions(make_dem(crater))
+    angle = compute_flow_direction(lake, DINF)
+    assert not np.isnan(angle[1:-1, 1:-1]).any()
+    accumulation = compute_flow_accumulation(lake, DINF)
+    assert accumulation[np.isnan(angle)].sum() == pytest.approx(N * N)

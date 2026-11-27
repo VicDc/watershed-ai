@@ -148,7 +148,7 @@ All of these live in `scripts/` and run directly against `app/hydrology/` + `app
 
 Honest status based on a full code audit with real execution (`docs/AUDIT-STATO-REALE.md`, 2026-07-21) — not aspirational.
 
-**Works today, verified by running it:** candidate detection, depression filling (priority-flood), D8 flow routing (direction, accumulation, flow paths; D-infinity/MFD not implemented), cellular-automata flood simulation, ranking, static map rendering, and all 16 scripts in `scripts/` (14 produce verified output on disk, 2 are interactive servers that start correctly). This is the pipeline described above and shown in the screenshots.
+**Works today, verified by running it:** candidate detection, depression filling (priority-flood), D8 and D-infinity flow routing (direction and accumulation; flow paths drawn with D8; MFD not implemented), cellular-automata flood simulation, ranking, static map rendering, and all 16 scripts in `scripts/` (14 produce verified output on disk, 2 are interactive servers that start correctly). This is the pipeline described above and shown in the screenshots.
 
 **Does not work — stub (`raise NotImplementedError`), never completed:**
 - `app/ingestion/lidar_processing.py` — LiDAR point-cloud ingestion (`extract_dem_from_lidar`) is **not implemented**. No `.las`/`.laz` test data exists in the repo either.
@@ -177,7 +177,7 @@ Honest status based on a full code audit with real execution (`docs/AUDIT-STATO-
 app/
 ├── agents/       # orchestrator + one class per pipeline stage (mostly unused, see status above)
 ├── ingestion/    # data sources → DEM (only public_dem.py's local-file path actually works)
-├── hydrology/    # D8 flow routing, candidate detection, priority-flood, cellular automata
+├── hydrology/    # D8 / D-infinity flow routing, candidate detection, priority-flood, cellular automata
 ├── viz/          # maps, animations, comparison charts (animations/charts are stubs, see status above)
 ├── services/     # DEM cache (Redis), report builder — both unimplemented
 └── core/         # domain types, config, exceptions

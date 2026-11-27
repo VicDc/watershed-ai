@@ -155,7 +155,7 @@ def main() -> None:
         template="plotly_dark",
         scene=dict(
             xaxis_title="colonna",
-            yaxis_title="riga",
+            yaxis=dict(title="riga", autorange="reversed"),  # riga 0 = nord: nord in alto, non specchiato
             zaxis_title="quota (m)",
             aspectratio=dict(x=1, y=n_rows / n_cols, z=0.5),
             # stessa camera della vista 3D animata (05): il pendio si vede di fronte

@@ -23,6 +23,7 @@ from app.hydrology.candidate_detection import detect_candidates
 from app.hydrology.cellular_automata import simulate_flood_with_snapshots
 from app.hydrology.priority_flood import fill_depressions
 from app.ingestion.public_dem import load_dem_from_geotiff
+from scripts.export_flood_animation_3d import CAMERA_ELEVATION_DEGREES, CAMERA_START_DEGREES
 
 DEM_PATH = "data/dem/copernicus_glo30_test.tif"
 OUTPUT_DIR = Path("output/maps")
@@ -102,9 +103,12 @@ def main() -> None:
     # non indici di griglia grezzi (0..n_cols) — altrimenti PyVista tratta
     # 1 "cella" e 1 "metro di quota" come la stessa unità, deformando
     # verticalmente tutta la scena (e con essa la texture).
+    # Nord in alto: la riga 0 del raster (nord) va a y massimo. Con y = riga la
+    # scena risultava specchiata nord-sud, e la texture (che PyVista mette con
+    # la riga 0 dell'immagine a y massimo) finiva capovolta rispetto alle quote.
     col_idx, row_idx = np.meshgrid(np.arange(n_cols), np.arange(n_rows))
     x_m = col_idx.astype(float) * dem.cell_size_m
-    y_m = row_idx.astype(float) * dem.cell_size_m
+    y_m = (n_rows - 1 - row_idx).astype(float) * dem.cell_size_m
 
     terrain_grid = pv.StructuredGrid(x_m, y_m, elevation)
     terrain_grid.texture_map_to_plane(inplace=True)
@@ -144,13 +148,19 @@ def main() -> None:
     for c in candidates:
         is_winner = c.id == winner_id
         radius_m = (3.0 if is_winner else 2.0) * dem.cell_size_m
-        center = (c.col * dem.cell_size_m, c.row * dem.cell_size_m, c.elevation + elevation.max() * 0.02)
+        center = (c.col * dem.cell_size_m, (n_rows - 1 - c.row) * dem.cell_size_m, c.elevation + elevation.max() * 0.02)
         sphere = pv.Sphere(radius=radius_m, center=center)
         plotter.add_mesh(sphere, color="gold" if is_winner else "mediumseagreen")
 
     plotter.add_text(f"Vincitore: {winner_id} (acqua esagerata {exaggeration:.1f}x, rilievo esagerato {TERRAIN_Z_EXAGGERATION:.1f}x)", font_size=10)
     plotter.set_scale(zscale=TERRAIN_Z_EXAGGERATION)
-    plotter.camera_position = "iso"
+    # Stessa vista delle altre 3D (scripts/export_flood_animation_3d.py): azimut
+    # antiorario da est, elevazione sull'orizzonte. 45°/16° = da nord-est.
+    az, el = np.radians(CAMERA_START_DEGREES), np.radians(CAMERA_ELEVATION_DEGREES)
+    focal = np.array(plotter.center)
+    direction = np.array([np.cos(el) * np.cos(az), np.cos(el) * np.sin(az), np.sin(el)])
+    plotter.camera_position = [tuple(focal + direction), tuple(focal), (0.0, 0.0, 1.0)]
+    plotter.reset_camera()  # tiene la direzione, adatta solo la distanza
     plotter.set_background("black")
 
     out_path = OUTPUT_DIR / timestamped_filename("terrain_satellite_3d", "html")

@@ -9,6 +9,10 @@ Pipeline di analisi del terreno che, a partire da un DEM, individua il miglior p
 
 ---
 
+## Demo live
+
+**[watershed-ai.vicio-dicara.workers.dev](https://watershed-ai.vicio-dicara.workers.dev)**: vista 3D interattiva del DEM di test con l'immagine satellitare drappeggiata sul terreno e l'allagamento del candidato vincitore. Trascina per ruotare, usa lo slider del tempo per vedere l'acqua che si espande, copia un link che riapre la stessa vista o scarica uno screenshot PNG con angolo della camera e istante della simulazione nel nome del file. Generata da `scripts/build_satellite_3d_site.py`.
+
 ## Cos'è
 
 Watershed-AI prende un modello digitale di elevazione (DEM) e trova il punto migliore per immettere acqua in uno scenario di allagamento — non semplicemente il punto più alto, ma quello che allaga la superficie maggiore. Valuta diversi punti candidati (massimi locali filtrati per prominenza), esegue una simulazione di allagamento a cellular automata per ciascuno, e li classifica per area/volume allagato. È pensato per chi vuole esplorare scenari di terreno/rischio idraulico a partire da un DEM — appassionati di idrologia, smanettoni GIS, o chiunque voglia un esempio funzionante di modellazione dell'allagamento su raster — non è uno strumento di previsione alluvionale professionale. Il cuore è calcolo raster deterministico NumPy/SciPy; non c'è alcuna componente di machine learning o LLM nonostante il naming `Agent`/`Orchestrator` (vedi [Stato del progetto](#stato-del-progetto--cosa-manca)).
@@ -28,7 +32,7 @@ DEM  →  [1] ingestion  →  [2] selezione candidati  →  [3] simulazione alla
 
 ## Risultati
 
-DEM con i punti candidati individuati:
+DEM con i punti candidati individuati e il percorso di deflusso D8 da ogni candidato valido (ciano):
 
 ![DEM con punti candidati](docs/assets/01_dem_candidati.png)
 
@@ -48,15 +52,15 @@ Stessa simulazione in vista 3D sul terreno:
 
 ![Animazione 3D dell'allagamento sul DEM](docs/assets/05_flood_animation_3d.gif)
 
-Stessa simulazione in vista 2D dall'alto su immagine satellitare:
+Stessa simulazione in vista 2D dall'alto su immagine satellitare, con i percorsi di deflusso D8 da ogni candidato (ciano):
 
 ![Animazione 2D su immagine satellitare](docs/assets/06_flood_animation_satellite.gif)
 
-Elevazione del DEM sovrapposta a immagine satellitare (HTML interattivo, cattura statica):
+Elevazione del DEM sovrapposta a immagine satellitare, con i percorsi di deflusso D8 dai candidati validi (HTML interattivo, cattura statica):
 
 ![Overlay DEM/satellite](docs/assets/07_dem_satellite_overlay.png)
 
-Mappa time-lapse interattiva dell'allagamento (HTML interattivo, cattura statica):
+Mappa time-lapse interattiva dell'allagamento su immagine satellitare, con i percorsi di deflusso D8 da ogni candidato (HTML interattivo, cattura statica):
 
 ![Mappa time-lapse dell'allagamento](docs/assets/08_flood_timelapse.png)
 

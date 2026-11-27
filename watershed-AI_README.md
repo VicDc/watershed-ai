@@ -18,6 +18,10 @@ per farlo ispessire più velocemente e contrastarne lo scioglimento estivo.
 
 ---
 
+## Live demo
+
+**[watershed-ai.vicio-dicara.workers.dev](https://watershed-ai.vicio-dicara.workers.dev)**: interactive 3D view of the test DEM with the satellite image draped on the terrain and the flood of the winning candidate. Drag to rotate, move the time slider to watch the water spread, copy a link that reopens the same view, or download a PNG screenshot with the camera angle and simulation time in the file name. Built by `scripts/build_satellite_3d_site.py`.
+
 ## What it is
 
 Watershed-AI takes a digital elevation model (DEM) and finds the best point to inject water for a flood scenario — not just the highest point, but the one that floods the largest area. It evaluates several candidate points (local maxima filtered by prominence), runs a cellular-automata flood simulation for each one, and ranks them by flooded area/volume. It's meant for anyone exploring terrain/flood-risk scenarios from a DEM — hydrology hobbyists, GIS tinkerers, or anyone who wants a runnable example of raster-based flood modeling — not a production flood-forecasting tool. The core is deterministic NumPy/SciPy raster computation; there is no machine-learning or LLM component despite the `Agent`/`Orchestrator` naming (see [Project status](#project-status--whats-missing)).
@@ -37,7 +41,7 @@ DEM  →  [1] ingestion  →  [2] candidate selection  →  [3] flood simulation
 
 ## Results
 
-DEM with detected candidate points:
+DEM with detected candidate points and the D8 flow path from each valid candidate (cyan):
 
 ![DEM with candidate points](docs/assets/01_dem_candidati.png)
 
@@ -57,15 +61,15 @@ Same simulation, 3D terrain view:
 
 ![3D flood animation on the DEM](docs/assets/05_flood_animation_3d.gif)
 
-Same simulation, top-down 2D view over satellite imagery:
+Same simulation, top-down 2D view over satellite imagery, with the D8 flow paths from each candidate (cyan):
 
 ![2D flood animation over satellite imagery](docs/assets/06_flood_animation_satellite.gif)
 
-DEM elevation overlaid on satellite imagery (interactive HTML, static capture):
+DEM elevation overlaid on satellite imagery, with the D8 flow paths from the valid candidates (interactive HTML, static capture):
 
 ![DEM/satellite overlay](docs/assets/07_dem_satellite_overlay.png)
 
-Interactive flood time-lapse map (interactive HTML, static capture):
+Interactive flood time-lapse map over satellite imagery, with the D8 flow paths from each candidate (interactive HTML, static capture):
 
 ![Flood time-lapse map](docs/assets/08_flood_timelapse.png)
 

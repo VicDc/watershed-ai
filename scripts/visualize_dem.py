@@ -20,6 +20,7 @@ from app.hydrology.candidate_detection import (
     _estimate_prominence,
     _find_local_maxima,
 )
+from app.hydrology.flow_routing import compute_flow_direction, trace_flow_path
 from app.hydrology.priority_flood import fill_depressions
 from app.ingestion.public_dem import load_dem_from_geotiff
 
@@ -32,6 +33,8 @@ maxima = _find_local_maxima(elev, CANDIDATE_DETECTION_PARAMS["local_max_window_c
 fig, ax = plt.subplots(figsize=(10, 7))
 im = ax.imshow(elev, cmap="terrain", origin="upper")
 plt.colorbar(im, ax=ax, label="Quota (m)")
+
+direction = compute_flow_direction(dem_filled)
 
 for row, col in maxima:
     prom, border_limited = _estimate_prominence(elev, row, col)
@@ -47,7 +50,10 @@ for row, col in maxima:
     else:
         color = "lime"         # accettato, prominenza reale misurata internamente
 
-    ax.plot(col, row, "o", color=color, markersize=8, markeredgecolor="black")
+    if passes:  # percorso di deflusso D8 dai candidati validi, come nella mappa finale
+        path = np.array(trace_flow_path(direction, row, col))
+        ax.plot(path[:, 1], path[:, 0], color="cyan", linewidth=1.2, alpha=0.9, zorder=3)
+    ax.plot(col, row, "o", color=color, markersize=8, markeredgecolor="black", zorder=4)
     ax.annotate(
         f"{elev[row,col]:.0f}m\nprom={'>=' if border_limited else ''}{prom:.1f}",
         (col, row),
@@ -63,8 +69,9 @@ idx = np.unravel_index(np.argmax(elev), elev.shape)
 ax.plot(idx[1], idx[0], "*", color="cyan", markersize=18, markeredgecolor="black", zorder=5)
 
 ax.set_title(
-    f"DEM {elev.shape[0]}x{elev.shape[1]} — verde=valido, arancione=valido (bordo tronca la sella), "
-    f"rosso=scartato, stella ciano=quota massima assoluta"
+    f"DEM {elev.shape[0]}x{elev.shape[1]} — verde=valido, arancione=valido (bordo tronca la sella),\n"
+    f"rosso=scartato, stella ciano=quota massima assoluta,\n"
+    f"linee ciano=deflusso D8 dai candidati validi"
 )
 ax.set_xlabel("colonna")
 ax.set_ylabel("riga")

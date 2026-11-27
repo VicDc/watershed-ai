@@ -25,6 +25,7 @@ from app.agents.ranking_agent import RankingAgent
 from app.core.naming import timestamped_filename
 from app.hydrology.candidate_detection import detect_candidates
 from app.hydrology.cellular_automata import FLOOD_SIM_PARAMS, simulate_flood_with_snapshots
+from app.hydrology.flow_routing import compute_flow_direction, trace_flow_path
 from app.hydrology.priority_flood import fill_depressions
 from app.ingestion.public_dem import load_dem_from_geotiff
 
@@ -66,6 +67,10 @@ def main() -> None:
     winner = next(c for c in candidates if c.id == winner_id)
     print(f"Vincitore: {winner_id}")
 
+    # Percorsi di deflusso D8 da ogni candidato, come nella mappa finale (linee ciano)
+    direction = compute_flow_direction(dem_filled)
+    flow_paths = [np.array(trace_flow_path(direction, c.row, c.col)) for c in candidates]
+
     print(f"Simulo con {N_FRAMES} frame per l'animazione...")
     result, frames = simulate_flood_with_snapshots(dem_filled, winner, n_snapshots=N_FRAMES)
     if not frames:
@@ -85,6 +90,8 @@ def main() -> None:
 
     fig, ax = plt.subplots(figsize=(9, 7))
     ax.imshow(satellite_arr, extent=[-0.5, n_cols - 0.5, n_rows - 0.5, -0.5])
+    for path in flow_paths:
+        ax.plot(path[:, 1], path[:, 0], color="cyan", linewidth=1.2, alpha=0.9, zorder=4)
     ax.plot(winner.col, winner.row, "*", color="gold", markersize=20, markeredgecolor="black", zorder=5)
     ax.set_xlabel("colonna")
     ax.set_ylabel("riga")
@@ -123,6 +130,8 @@ def main() -> None:
         mp4_path = out_path.with_suffix(".mp4")
         fig2, ax2 = plt.subplots(figsize=(9, 7))
         ax2.imshow(satellite_arr, extent=[-0.5, n_cols - 0.5, n_rows - 0.5, -0.5])
+        for path in flow_paths:
+            ax2.plot(path[:, 1], path[:, 0], color="cyan", linewidth=1.2, alpha=0.9, zorder=4)
         ax2.plot(winner.col, winner.row, "*", color="gold", markersize=20, markeredgecolor="black", zorder=5)
         water_im2 = ax2.imshow(
             np.ma.masked_all_like(elevation), cmap="Blues", alpha=0.8, origin="upper",

@@ -29,6 +29,7 @@ from app.hydrology.candidate_detection import (
     _estimate_prominence,
     _find_local_maxima,
 )
+from app.hydrology.flow_routing import compute_flow_direction, trace_flow_path
 from app.hydrology.priority_flood import fill_depressions
 from app.ingestion.public_dem import load_dem_from_geotiff
 
@@ -108,6 +109,8 @@ def main() -> None:
     # Candidati per i marker sempre visibili
     maxima = _find_local_maxima(elevation, CANDIDATE_DETECTION_PARAMS["local_max_window_cells"])
     markers_html = []
+    direction = compute_flow_direction(dem_filled)
+    path_polylines = []
     for row, col in maxima:
         prom, border_limited = _estimate_prominence(elevation, row, col)
         area = _compute_watershed_area(elevation, row, col)
@@ -124,6 +127,10 @@ def main() -> None:
             css_class = "border-limited"  # arancione, rombo
         else:
             css_class = "valid"       # verde, cerchio
+
+        if passes:  # percorso di deflusso D8, coordinate = centro cella (colonna, riga)
+            points = " ".join(f"{c + 0.5},{r + 0.5}" for r, c in trace_flow_path(direction, row, col))
+            path_polylines.append(f'<polyline points="{points}" />')
 
         left_pct = (col + 0.5) / n_cols * 100
         top_pct = (row + 0.5) / n_rows * 100
@@ -168,6 +175,10 @@ def main() -> None:
   }}
   .container img {{ position: absolute; top: 0; left: 0; width: {width}px; height: {height}px; display: block; }}
   #demLayer {{ opacity: var(--dem-default-opacity); }}
+  /* Percorsi D8 sopra le immagini, sotto i marker */
+  .flow-paths {{ position: absolute; top: 0; left: 0; width: {width}px; height: {height}px; z-index: 5; pointer-events: none; }}
+  .flow-paths polyline {{ fill: none; stroke: cyan; stroke-width: 2; stroke-opacity: 0.9; vector-effect: non-scaling-stroke; }}
+  .legend-line {{ width: 22px; height: 0; border-top: 2px solid cyan; flex-shrink: 0; }}
 
   .marker {{
     position: absolute;
@@ -211,12 +222,14 @@ def main() -> None:
   <div class="container">
     <img id="satelliteLayer" src="{to_data_uri(satellite_bytes)}" alt="satellite">
     <img id="demLayer" src="{to_data_uri(dem_png)}" alt="dem">
+    <svg class="flow-paths" viewBox="0 0 {n_cols} {n_rows}" preserveAspectRatio="none">{''.join(path_polylines)}</svg>
     {''.join(markers_html)}
   </div>
   <div class="legend">
     <div class="legend-item"><span class="legend-swatch valid"></span> candidato valido (sella reale)</div>
     <div class="legend-item"><span class="legend-swatch border-limited"></span> candidato valido (limite bordo)</div>
     <div class="legend-item"><span class="legend-swatch discarded"></span> scartato</div>
+    <div class="legend-item"><span class="legend-line"></span> deflusso D8 dai candidati validi</div>
   </div>
 <script>
   const slider = document.getElementById('opacitySlider');
